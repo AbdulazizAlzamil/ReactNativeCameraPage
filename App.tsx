@@ -1,117 +1,143 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+/* eslint-disable */
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
+  Dimensions,
+  FlatList,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
+  TouchableOpacity,
 } from 'react-native';
+import SwipeableItems from './SwipeableItems';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+enum CameraMode {
+  Camera = 'Camera',
+  Video = 'Video',
+  Portrait = 'Portrait',
+}
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const data: CameraMode[] = [
+  CameraMode.Camera,
+  CameraMode.Video,
+  CameraMode.Portrait,
+];
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+function App() {
+  const [selectedMode, setSelectedMode] = useState<CameraMode>();
+  const [isRecording, setIsRecording] = useState(false);
+
+  const getSelectedModeStyle = () => {
+    switch (selectedMode) {
+      case CameraMode.Portrait:
+      case CameraMode.Camera:
+        return {
+          backgroundColor: 'white',
+        }
+      case CameraMode.Video:
+        return {
+          backgroundColor: 'red',
+          borderRadius: isRecording ? 5 : 35,
+          width: isRecording ? 50 : 70,
+          height: isRecording ? 50 : 70,
+        }
+      default:
+        return {
+          backgroundColor: 'white',
+        }
+    }
+  }
+
+  const handleRecordButtonPress = () => {
+    setIsRecording(prev => !prev);
+  }
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={{backgroundColor: 'gray', flex: 1}}>
+      <View style={{position: 'absolute', top: 20, right: 20, gap: 20}}>
+        <View style={styles.captureSettingsButton}></View>
+        <View style={styles.captureSettingsButton}></View>
+        <View style={styles.captureSettingsButton}></View>
+      </View>
+      <View style={styles.bottomBar}>
+        <Text>Home</Text>
+        <Text>Camera</Text>
+        <Text>Map</Text>
+        <Text>Profile</Text>
+      </View>
+      <View style={styles.horizontalScroll}>
+        <SwipeableItems 
+          isRecording={isRecording}
+          selectedMode={selectedMode}
+          setSelectedMode={setSelectedMode}
+          data={data}
+        />
+      </View>
+      <View>
+        <View style={styles.captureButton}>
+          <View style={styles.captureButtonOutline}>
+            <TouchableOpacity 
+              onPress={handleRecordButtonPress} 
+              style={{...styles.captureButtonCircle, ...getSelectedModeStyle()}} />
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  captureButton: {
+    position: 'absolute',
+    bottom: 80,
+    alignSelf: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  captureButtonOutline: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 4,
+    borderColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  captureButtonCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  highlight: {
-    fontWeight: '700',
+  captureSettingsButton: {
+    backgroundColor: 'white',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  horizontalScroll: {
+    position: 'absolute',
+    alignSelf: 'center',
+    bottom: 200,
+  },
+  horizontalScrollItem: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    // width,
+    width: 80,
+    marginHorizontal: 20,
+  },
+  horizontalScrollItemText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  bottomBar: {
+    backgroundColor: 'white',
+    height: 60,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: 'auto',
   },
 });
 
